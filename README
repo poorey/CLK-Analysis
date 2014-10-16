@@ -1,0 +1,155 @@
+CLK-Analysis
+============
+Matlab program to analyze Crosslinking Kinetic ChIP (CLK) data
+Welcome to the CLK Analysis MATLAB Package
+This package was written by Kunal Poorey - kp9y@virginia.edu
+For questions contact either Kunal Poorey (above) or David Auble - auble@virginia.edu
+
+This package will perform nonlinear regression using the CLK model to provide kinetic parameters associated with your ChIP data.
+
+See Poorey et al. “Measuring chromatin interaction dynamics on the second time scale at single-copy genes.” Science 342:369-372, 2013.
+
+This document was written mainly to make the analysis of CLK data accessible to individuals with little to no MATLAB experience.  If you are an experienced MATLAB user or comfortable with this type of analysis in general, please just skip over any unnecessary details.
+ 
+
+These are the steps you need to follow to do the analysis:
+
+
+
+Step 1 
+
+
+
+Open MATLAB and enter the full path to the CLK analysis directory in the command line.
+Example: "cd D:\work\CLK_CHIP\Kinetics\Model" 
+Alternatively, on a Mac, drag the folder to the command line and the full path will appear. If you have used the scripts before, and on the same machine, you can simply double-click the proper command in the command history (lower right window).
+
+
+
+Step 2 - Preparation of the input data file
+
+
+
+A sample input file is included in the CLK folder. It provides the format which is accepted by the CLK_model_Script program.
+
+
+Double click “sample.txt” in the left panel of MATLAB
+
+
+
+The data should be entered in tab delimited format using only numbers (i.e. no units).  You can do this by simply replacing the data in sample.txt with your data, or you can create a new .txt file with your data. (Tab delimiting data involves nothing more than entering a number and then hitting "tab" to make the next column; hit "return" to go to the next row)
+
+
+Format of the sample input file:
+
+
+Column 1 - Time (seconds)
+
+Column 2 - Overexpression Coefficient
+
+            	1 for WT and some other number for results obtained using an overexpression strain 		(the default OE value is 3 in sample.txt). The OE value is typically determined by 		comparing western blot signals obtained using extracts from WT and OE cells.
+
+                
+
+Column 3 - Formaldehyde Concentration Coefficient
+
+  		Usually this value will be set to 1, but you can change the value if you 			have tested the effect of formaldehyde concentration.
+
+            	Example: set to 1 for 1% formaldehyde and 8 for 8% formaldehyde 
+
+            
+
+Column 4 - ChIP Signal: Calculated as (IP-Mock/Total)
+
+
+
+Column 5 - Standard deviation of the ChIP signal obtained from two (or more) biological replicates.
+
+
+
+Example data file:
+  
+
+0.44	1	1	0.1	0.01
+
+0.88	1	1	0.3	0.04
+
+1	1	1	0.4	0.1
+
+5	1	1	0.5	0.2
+
+60	1	1	0.6	0.3
+
+0.44	3	1	0.1	0.01
+
+0.88	3	1	0.3	0.04
+
+1	3	1	0.4	0.1
+
+5	3	1	0.5	0.2
+
+60	3	1	0.6	0.3
+
+
+
+Note that because the numbers have different numbers of digits, the values may not line up in a nice vertical column when displayed in the editor.  Don’t worry about this- it may be a little hard to read, but if you entered the data as described above everything is fine.
+
+Step 3
+
+Save your data file.  It must be a .txt file!  You can save your data file as “sample.txt” (simply overwrite the numbers that were there.)  The advantage of this is that the program will use this file name and location by default. If you do this, it is critical that you SAVE the file or MATLAB will use the original numbers that were in the file for the fits.  Alternatively, you can give your file a different name and then change the input file name (and possibly its path) when you set up to run the fitting scripts in the next step.
+
+
+Step 4 
+
+Double click “CLK_model_Script.m” in the left panel of MATLAB
+
+If you saved your data as a separate file, you can enter the name and path in line 3; if you saved your data by overwriting “sample.txt” then you need not change anything with regard to the specified data file.
+
+
+
+Two variables are needed for Step 4:
+
+
+Line number 14: Initial guess for IP-Saturation level. Estimate this from the maximum chip signal in your dataset (obtained in samples with the longest formaldehyde incubation times).
+
+
+Line number 20: Overexpression Coefficient. Enter an estimate of how much the TF expression level differs in the overexpression strain compared to WT. As described above, this is typically quantified by western blotting. Example: if the protein of interest is over expressed three-fold in the OE strain compared to WT, enter the value 1 for WT data and 3 for OE data.  Remember that you entered the overexpression value in the .txt file, so even if you do not change the value on line 20, the script will use the overexpression value in the .txt dataset. 
+
+Optional: you can change the title of this set of fits in line 16 and the figure number in line 17.
+
+If you are using a mac, save changes you made to CLK_model_Script.m 
+(It is not necessary to save changes if you are using a PC because any changes are automatically saved in the next step.)
+
+  
+
+
+
+Step 5 
+
+Run the CLK_model_Script.m 
+-On a PC, press the F5 key.
+-On a Mac, type the command “CLK_model_Script” and hit return.
+
+The results will be displayed in less than a minute in the center command window and also as a table just above it.
+  
+The four returned parameters will be listed as follows:
+
+kaC	kd	kxlCFH	IP_sat
+
+(In the command window, the numbers are listed below “K_final=“)
+
+Obtain theta_bound by calculating: theta_bound = kaC/(kaC + kd)
+Obtain t1/2 = ln2/kd
+
+Two sets of plots of the data and fits will be displayed in separate windows. 
+
+Figure 1: The upper plot shows the fits obtained using the Case 1 Approximate Model, which is an intermediate step in the fitting pipeline.  The lower plot shows all of the full model fits obtained using the Case 1 parameters (kaC, kd and IP_sat) as input along with a wide range of kxl values.  You can see the input values by double-clicking the file “K_all_app_case1” (in the Workspace window, upper right).  The lower plot often appears as only two lines because changing the initial kxl estimates does not often affect the final fits, and thus the multiple fits are on top of one another.  You can view the parameters derived from these multiple fits to the full model by double-clicking “K_all_case1” in the Workspace window. Note that when you see zeroes among the fitted parameters, this indicates that the fit failed.  
+
+Figure 2: This shows the best final fits (lowest RMSE) of the data to the full CLK model, and is the result you’re most interested in. (This Figure will have a different figure number if you changed it in Step 4.) 
+
+You can alter the graphical display using the various tools in the plot menu.  If you save the graph as a .fig it can be opened later in MATLAB.  In general, the best way to save a graphical image for later presentation is to save it as a .pdf, then open it in Photoshop and save in a high resolution format.
+
+If you are fitting more than one dataset, be sure to close the graph windows from the first dataset before fitting a subsequent dataset.  Otherwise the two datasets will be superimposed on the same graph. 
+
+
+
